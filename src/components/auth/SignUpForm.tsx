@@ -4,10 +4,49 @@ import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "../../icons";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
 import Checkbox from "../form/input/Checkbox";
+import { z } from "zod";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { cn } from "../../lib/utils";
+
+const passwordRegex: RegExp =
+  /^(?=.*[0-9])(?=.*[a-z])(?=.*[!@#$%^&*(),.?":{}|<>])(?=.*[A-Z]).{8,}$/;
+
+const FormSchema = z.object({
+  email: z.email({ message: "Email is required" }),
+  firstName: z.string({error: "First name is required"}),
+  lastName: z.string({error: "Last name is reqired"}),
+  password: z
+    .string({error: "Password is required"})
+    .min(8, { message: "Password must be at least 8 characters long" })
+    .regex(passwordRegex, {
+      message:
+        "Password must include at least one uppercase letter, one lowercase letter, one number, and one special character",
+    }),
+});
 
 export default function SignUpForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
+
+  type FormValues = z.infer<typeof FormSchema>;
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isValid },
+  } = useForm<FormValues>({
+    mode: "all",
+    resolver: zodResolver(FormSchema),
+  });
+
+
+  const onSubmit = (data:FormValues ) => {
+
+    // write the logic for the form submision here
+
+  };
+
   return (
     <div className="flex flex-col flex-1 w-full overflow-y-auto lg:w-1/2 no-scrollbar">
       <div className="w-full max-w-md mx-auto mb-5 sm:pt-10">
@@ -82,68 +121,137 @@ export default function SignUpForm() {
                 </span>
               </div>
             </div>
-            <form>
+            <form onSubmit={handleSubmit(onSubmit)}>
               <div className="space-y-5">
                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                   {/* <!-- First Name --> */}
                   <div className="sm:col-span-1">
-                    <Label>
-                      First Name<span className="text-error-500">*</span>
-                    </Label>
-                    <Input
-                      type="text"
-                      id="fname"
-                      name="fname"
-                      placeholder="Enter your first name"
+                    <Controller
+                      control={control}
+                      render={({ field: { onChange, onBlur, value } }) => (
+                        <div className="gap-2">
+                          <Label htmlFor="firstName">
+                            First Name<span className="text-error-500">*</span>
+                          </Label>
+                          <Input
+                            type="text"
+                            id="firstName"
+                            name="firstName"
+                            placeholder="Enter your First Name"
+                            onChange={onChange}
+                            value={value}
+                            onBlur={onBlur}
+                            error={!!errors.email?.message}
+                          />
+                          {errors && (
+                            <h5 className="text-red-400">
+                              {errors.firstName?.message}
+                            </h5>
+                          )}
+                        </div>
+                      )}
+                      name="firstName"
                     />
                   </div>
                   {/* <!-- Last Name --> */}
                   <div className="sm:col-span-1">
-                    <Label>
-                      Last Name<span className="text-error-500">*</span>
-                    </Label>
-                    <Input
-                      type="text"
-                      id="lname"
-                      name="lname"
-                      placeholder="Enter your last name"
+                    <Controller
+                      control={control}
+                      render={({ field: { onChange, onBlur, value } }) => (
+                        <div className="gap-2">
+                          <Label htmlFor="lastName">
+                            Last Name<span className="text-error-500">*</span>
+                          </Label>
+                          <Input
+                            type="text"
+                            id="lastName"
+                            name="lastName"
+                            placeholder="Enter your Last Name"
+                            onChange={onChange}
+                            value={value}
+                            onBlur={onBlur}
+                            error={!!errors.email?.message}
+                          />
+                          {errors && (
+                            <h5 className="text-red-400">
+                              {errors.lastName?.message}
+                            </h5>
+                          )}
+                        </div>
+                      )}
+                      name="lastName"
                     />
                   </div>
                 </div>
                 {/* <!-- Email --> */}
                 <div>
-                  <Label>
-                    Email<span className="text-error-500">*</span>
-                  </Label>
-                  <Input
-                    type="email"
-                    id="email"
+                  <Controller
+                    control={control}
+                    render={({ field: { onChange, onBlur, value } }) => (
+                      <div className="gap-2">
+                        <Label htmlFor="email">
+                          Email<span className="text-error-500">*</span>
+                        </Label>
+                        <Input
+                          type="email"
+                          id="email"
+                          name="email"
+                          placeholder="Enter your email"
+                          onChange={onChange}
+                          value={value}
+                          onBlur={onBlur}
+                          error={!!errors.email?.message}
+                        />
+                        {errors && (
+                          <h5 className="text-red-400">
+                            {errors.email?.message}
+                          </h5>
+                        )}
+                      </div>
+                    )}
                     name="email"
-                    placeholder="Enter your email"
                   />
                 </div>
                 {/* <!-- Password --> */}
-                <div>
-                  <Label>
-                    Password<span className="text-error-500">*</span>
-                  </Label>
-                  <div className="relative">
-                    <Input
-                      placeholder="Enter your password"
-                      type={showPassword ? "text" : "password"}
-                    />
-                    <span
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2"
-                    >
-                      {showPassword ? (
-                        <EyeIcon className="fill-gray-500 dark:fill-gray-400 size-5" />
-                      ) : (
-                        <EyeCloseIcon className="fill-gray-500 dark:fill-gray-400 size-5" />
+
+                <Controller
+                  control={control}
+                  render={({ field: { onChange, onBlur, value } }) => (
+                    <div>
+                      <Label htmlFor="password">
+                        Password<span className="text-error-500">*</span>
+                      </Label>
+                      <div className="relative">
+                        <Input
+                          id="password"
+                          placeholder="Enter your password"
+                          type={showPassword ? "text" : "password"}
+                          onChange={onChange}
+                          value={value}
+                          error={!!errors.password?.message}
+                          onBlur={onBlur}
+                          name="password"
+                        />
+                        <span
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2"
+                        >
+                          {showPassword ? (
+                            <EyeIcon className="fill-gray-500 dark:fill-gray-400 size-5" />
+                          ) : (
+                            <EyeCloseIcon className="fill-gray-500 dark:fill-gray-400 size-5" />
+                          )}
+                        </span>
+                      </div>
+                      {errors && (
+                        <h5 className="text-red-400">
+                          {errors.password?.message}
+                        </h5>
                       )}
-                    </span>
-                  </div>
-                </div>
+                    </div>
+                  )}
+                  name="password"
+                />
                 {/* <!-- Checkbox --> */}
                 <div className="flex items-center gap-3">
                   <Checkbox
@@ -164,7 +272,13 @@ export default function SignUpForm() {
                 </div>
                 {/* <!-- Button --> */}
                 <div>
-                  <button className="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600">
+                  <button
+                    disabled={!isValid}
+                    className={cn(
+                      isValid ? "bg-brand-500 hover:bg-brand-600" : "bg-gray-300 hover:bg-gray-400",
+                      "flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition rounded-lg  shadow-theme-xs "
+                    )}
+                  >
                     Sign Up
                   </button>
                 </div>
